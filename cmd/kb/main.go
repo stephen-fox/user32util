@@ -11,7 +11,9 @@ import (
 func main() {
 	fn := func(event winuserio.LowLevelKeyboardEvent) {
 		if event.KeyboardButtonAction() == winuserio.WMKeyDown {
-			fmt.Printf("%q\n", event.HookStruct().VirtualKeyCode())
+			fmt.Printf("%q (%d) down\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
+		} else if event.KeyboardButtonAction() == winuserio.WMKeyUp {
+			fmt.Printf("%q (%d) up\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
 		}
 	}
 
