@@ -38,7 +38,7 @@ type LowLevelKeyboardEventListener struct {
 	done       chan error
 }
 
-func (o *LowLevelKeyboardEventListener) OnDone() chan error {
+func (o *LowLevelKeyboardEventListener) OnDone() <-chan error {
 	return o.done
 }
 
@@ -80,7 +80,7 @@ func (o KbdllHookStruct) VirtualKeyCode() byte {
 
 func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32DLL) (*LowLevelKeyboardEventListener, error) {
 	ready := make(chan hookSetupResult)
-	done := make(chan error)
+	done := make(chan error, 1)
 
 	go func() {
 		var hookHandle uintptr
