@@ -53,20 +53,20 @@ func (o *LowLevelKeyboardEventListener) Release() error {
 type LowLevelKeyboardEvent struct {
 	wParam uintptr
 	lParam uintptr
-	s      *KbDllHookStruct
+	s      *KbdllHookStruct
 }
 
 func (o LowLevelKeyboardEvent) KeyboardButtonAction() KeyboardButtonAction {
 	return KeyboardButtonAction(o.wParam)
 }
 
-func (o LowLevelKeyboardEvent) HookStruct() *KbDllHookStruct {
+func (o LowLevelKeyboardEvent) HookStruct() *KbdllHookStruct {
 	return o.s
 }
 
 // See the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-kbdllhookstruct
-type KbDllHookStruct struct {
+type KbdllHookStruct struct {
 	VkCode      uint32
 	ScanCode    uint32
 	Flags       uint32
@@ -74,7 +74,7 @@ type KbDllHookStruct struct {
 	DwExtraInfo uintptr
 }
 
-func (o KbDllHookStruct) VirtualKeyCode() byte {
+func (o KbdllHookStruct) VirtualKeyCode() byte {
 	return byte(o.VkCode)
 }
 
@@ -92,7 +92,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 					fn(LowLevelKeyboardEvent{
 						wParam: wParam,
 						lParam: lParam,
-						s:      (*KbDllHookStruct)(unsafe.Pointer(lParam)),
+						s:      (*KbdllHookStruct)(unsafe.Pointer(lParam)),
 					})
 				}
 
