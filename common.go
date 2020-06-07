@@ -2,7 +2,7 @@ package winuserio
 
 import "golang.org/x/sys/windows"
 
-func newHooksWinApi() (*hooksWinApi, error) {
+func loadUser32DLL() (*user32DLL, error) {
 	user32, err := windows.LoadDLL(user32DllName)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func newHooksWinApi() (*hooksWinApi, error) {
 		return nil, err
 	}
 
-	return &hooksWinApi{
+	return &user32DLL{
 		user32:              user32,
 		setWindowsHookExA:   set,
 		callNextHookEx:      call,
@@ -37,7 +37,7 @@ func newHooksWinApi() (*hooksWinApi, error) {
 	}, nil
 }
 
-type hooksWinApi struct {
+type user32DLL struct {
 	user32              *windows.DLL
 	setWindowsHookExA   *windows.Proc
 	callNextHookEx      *windows.Proc

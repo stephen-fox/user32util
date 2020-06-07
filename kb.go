@@ -29,7 +29,7 @@ const (
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
 type LowLevelKeyboardEventListener struct {
-	hooksWinApi *hooksWinApi
+	hooksWinApi *user32DLL
 	fn          OnLowLevelKeyboardEventFunc
 	hookHandle  uintptr
 	done        chan error
@@ -74,7 +74,7 @@ func (o KbDllHookStruct) VirtualKeyCode() byte {
 }
 
 func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeyboardEventListener, error) {
-	hooksWinApi, err := newHooksWinApi()
+	user32, err := loadUser32DLL()
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 	go func() {
 		var hookHandle uintptr
 		var err error
-		hookHandle, _, err = hooksWinApi.setWindowsHookExA.Call(
+		hookHandle, _, err = user32.setWindowsHookExA.Call(
 			uintptr(whKeyboardLl),
 			uintptr(windows.NewCallback(func(nCode int, wParam uintptr, lParam uintptr) uintptr {
 				if nCode == 0 {
@@ -96,7 +96,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 					})
 				}
 
-				nextHookCallResult, _, _ := hooksWinApi.callNextHookEx.Call(hookHandle, uintptr(nCode), wParam, lParam)
+				nextHookCallResult, _, _ := user32.callNextHookEx.Call(hookHandle, uintptr(nCode), wParam, lParam)
 
 				return nextHookCallResult
 			})),
@@ -112,7 +112,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 
 		// Needed to actually get events. Must be on same thread as hook.
 		// TODO: How does this get unblocked? It's blocked forever.
-		for r, _, _ := hooksWinApi.getMessageW.Call(0, 0, 0, 0); r == 0; {}
+		for r, _, _ := user32.getMessageW.Call(0, 0, 0, 0); r == 0; {}
 
 		done <- nil
 	}()
@@ -123,7 +123,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 	}
 
 	return &LowLevelKeyboardEventListener{
-		hooksWinApi: hooksWinApi,
+		hooksWinApi: user32,
 		hookHandle:  result.handle,
 		fn:          fn,
 		done:        done,
