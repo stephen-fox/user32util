@@ -87,12 +87,12 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 		return nil, err
 	}
 
-	var hookHandle uintptr
-
-	ready := make(chan error)
+	ready := make(chan hookSetupResult)
 	done := make(chan error)
 
 	go func() {
+		var hookHandle uintptr
+		var err error
 		hookHandle, _, err = hooksWinApi.setWindowsHookExA.Call(
 			uintptr(whKeyboardLl),
 			uintptr(windows.NewCallback(func(nCode int, wParam uintptr, lParam uintptr) uintptr {
@@ -112,11 +112,11 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 			uintptr(0),
 		)
 		if hookHandle == 0 && err != nil {
-			ready <- err
+			ready <- hookSetupResult{err:err}
 			return
 		}
 
-		ready <- nil
+		ready <- hookSetupResult{handle:hookHandle}
 
 		// Needed to actually get events. Must be on same thread as hook.
 		// TODO: How does this get unblocked? It's blocked forever.
@@ -125,14 +125,14 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeybo
 		done <- nil
 	}()
 
-	err = <-ready
-	if err != nil {
-		return nil, err
+	result := <-ready
+	if result.err != nil {
+		return nil, result.err
 	}
 
 	return &LowLevelKeyboardEventListener{
 		hooksWinApi: hooksWinApi,
-		hookHandle:  hookHandle,
+		hookHandle:  result.handle,
 		fn:          fn,
 		done:        done,
 	}, nil
