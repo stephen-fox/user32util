@@ -16,6 +16,7 @@ const (
 	callNextHookExName      = "CallNextHookEx"
 	unhookWindowsHookExName = "UnhookWindowsHookEx"
 	getMessageWName         = "GetMessageW"
+	sendInputName           = "SendInput"
 )
 
 type KeyboardButtonAction uintptr

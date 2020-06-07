@@ -41,12 +41,18 @@ func LoadUser32DLL() (*User32DLL, error) {
 		return nil, err
 	}
 
+	sendInput, err := user32.FindProc(sendInputName)
+	if err != nil {
+		return nil, err
+	}
+
 	return &User32DLL{
 		user32:              user32,
 		setWindowsHookExA:   set,
 		callNextHookEx:      call,
 		unhookWindowsHookEx: unhook,
 		getMessageW:         getMessageW,
+		sendInput:           sendInput,
 	}, nil
 }
 
@@ -56,6 +62,7 @@ type User32DLL struct {
 	callNextHookEx      *windows.Proc
 	unhookWindowsHookEx *windows.Proc
 	getMessageW         *windows.Proc
+	sendInput           *windows.Proc
 }
 
 type hookSetupResult struct {
