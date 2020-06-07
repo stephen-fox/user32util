@@ -30,10 +30,10 @@ const (
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
 type LowLevelKeyboardEventListener struct {
-	hooksWinApi *User32DLL
-	fn          OnLowLevelKeyboardEventFunc
-	hookHandle  uintptr
-	done        chan error
+	user32     *User32DLL
+	fn         OnLowLevelKeyboardEventFunc
+	hookHandle uintptr
+	done       chan error
 }
 
 func (o *LowLevelKeyboardEventListener) OnDone() chan error {
@@ -41,7 +41,7 @@ func (o *LowLevelKeyboardEventListener) OnDone() chan error {
 }
 
 func (o *LowLevelKeyboardEventListener) Release() error {
-	o.hooksWinApi.unhookWindowsHookEx.Call(o.hookHandle)
+	o.user32.unhookWindowsHookEx.Call(o.hookHandle)
 
 	o.hookHandle = 0
 
@@ -119,9 +119,9 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 	}
 
 	return &LowLevelKeyboardEventListener{
-		hooksWinApi: user32,
-		hookHandle:  result.handle,
-		fn:          fn,
-		done:        done,
+		user32:     user32,
+		hookHandle: result.handle,
+		fn:         fn,
+		done:       done,
 	}, nil
 }
