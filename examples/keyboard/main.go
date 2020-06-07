@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
+	"os"
+	"os/signal"
 
 	"github.com/stephen-fox/winuserio"
 )
@@ -26,9 +27,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create listener - %s", err.Error())
 	}
-	defer listener.Release()
 
-	for {
-		time.Sleep(1 * time.Second)
+	log.Println("now listening for keyboard events - press Ctrl+C to stop")
+
+	interrupts := make(chan os.Signal, 1)
+	signal.Notify(interrupts, os.Interrupt)
+	select {
+	case err := <-listener.OnDone():
+		log.Fatalf("keyboard listener stopped unexpectedly - %v", err)
+	case <-interrupts:
 	}
+
+	listener.Release()
 }
