@@ -45,7 +45,7 @@ func (o *LowLevelKeyboardEventListener) Release() error {
 
 	o.hookHandle = 0
 
-	return o.hooksWinApi.user32.Release()
+	return nil
 }
 
 type LowLevelKeyboardEvent struct {
