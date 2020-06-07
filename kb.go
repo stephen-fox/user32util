@@ -29,6 +29,8 @@ const (
 
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
+// See the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644985(v=vs.85)
 type LowLevelKeyboardEventListener struct {
 	user32     *User32DLL
 	fn         OnLowLevelKeyboardEventFunc
@@ -62,6 +64,8 @@ func (o LowLevelKeyboardEvent) HookStruct() *KbDllHookStruct {
 	return o.s
 }
 
+// See the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-kbdllhookstruct
 type KbDllHookStruct struct {
 	VkCode      uint32
 	ScanCode    uint32

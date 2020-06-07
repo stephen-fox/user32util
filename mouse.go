@@ -93,7 +93,7 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 	}, nil
 }
 
-// See the following Windows API doc for more information:
+// See the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msllhookstruct
 type MsllHookStruct struct {
 	Point       Point
@@ -108,7 +108,7 @@ type Point struct {
 	Y int32
 }
 
-// See the following Windows API doc for more information:
+// See the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644986(v=vs.85)
 type LowLevelMouseEventListener struct {
 	user32     *User32DLL
