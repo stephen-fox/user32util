@@ -104,15 +104,16 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 			uintptr(0),
 		)
 		if hookHandle == 0 && err != nil {
-			ready <- hookSetupResult{err:err}
+			ready <- hookSetupResult{err: err}
 			return
 		}
 
-		ready <- hookSetupResult{handle:hookHandle}
+		ready <- hookSetupResult{handle: hookHandle}
 
 		// Needed to actually get events. Must be on same thread as hook.
 		// TODO: How does this get unblocked? It's blocked forever.
-		for r, _, _ := user32.getMessageW.Call(0, 0, 0, 0); r == 0; {}
+		for r, _, _ := user32.getMessageW.Call(0, 0, 0, 0); r == 0; {
+		}
 
 		done <- nil
 	}()
