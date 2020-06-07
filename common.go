@@ -1,11 +1,24 @@
 package winuserio
 
-import "golang.org/x/sys/windows"
+import (
+	"golang.org/x/sys/windows"
+)
 
 func loadUser32DLL() (*user32DLL, error) {
-	user32, err := windows.LoadDLL(user32DllName)
+	// TODO: Hack to avoid using unsafe 'windows.LoadDLL()' while
+	//  retaining full control over when a DLL is loaded.
+	temp := windows.LazyDLL{
+		Name:   user32DllName,
+		System: true,
+	}
+	err := temp.Load()
 	if err != nil {
 		return nil, err
+	}
+
+	user32 := &windows.DLL{
+		Name:   temp.Name,
+		Handle: windows.Handle(temp.Handle()),
 	}
 
 	set, err := user32.FindProc(setWindowsHookExAName)
