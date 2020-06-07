@@ -29,7 +29,7 @@ const (
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
 type LowLevelKeyboardEventListener struct {
-	hooksWinApi *user32DLL
+	hooksWinApi *User32DLL
 	fn          OnLowLevelKeyboardEventFunc
 	hookHandle  uintptr
 	done        chan error
@@ -73,12 +73,7 @@ func (o KbDllHookStruct) VirtualKeyCode() byte {
 	return byte(o.VkCode)
 }
 
-func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc) (*LowLevelKeyboardEventListener, error) {
-	user32, err := loadUser32DLL()
-	if err != nil {
-		return nil, err
-	}
-
+func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32DLL) (*LowLevelKeyboardEventListener, error) {
 	ready := make(chan hookSetupResult)
 	done := make(chan error)
 

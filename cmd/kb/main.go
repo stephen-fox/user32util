@@ -9,6 +9,11 @@ import (
 )
 
 func main() {
+	user32, err := winuserio.LoadUser32DLL()
+	if err != nil {
+		log.Fatalf("failed to load user32.dll - %s", err.Error())
+	}
+
 	fn := func(event winuserio.LowLevelKeyboardEvent) {
 		if event.KeyboardButtonAction() == winuserio.WMKeyDown {
 			fmt.Printf("%q (%d) down\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
@@ -17,7 +22,7 @@ func main() {
 		}
 	}
 
-	listener, err := winuserio.NewLowLevelKeyboardListener(fn)
+	listener, err := winuserio.NewLowLevelKeyboardListener(fn, user32)
 	if err != nil {
 		log.Fatalf("failed to create listener - %s", err.Error())
 	}

@@ -4,7 +4,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func loadUser32DLL() (*user32DLL, error) {
+func LoadUser32DLL() (*User32DLL, error) {
 	// TODO: Hack to avoid using unsafe 'windows.LoadDLL()' while
 	//  retaining full control over when a DLL is loaded.
 	temp := windows.LazyDLL{
@@ -41,7 +41,7 @@ func loadUser32DLL() (*user32DLL, error) {
 		return nil, err
 	}
 
-	return &user32DLL{
+	return &User32DLL{
 		user32:              user32,
 		setWindowsHookExA:   set,
 		callNextHookEx:      call,
@@ -50,7 +50,7 @@ func loadUser32DLL() (*user32DLL, error) {
 	}, nil
 }
 
-type user32DLL struct {
+type User32DLL struct {
 	user32              *windows.DLL
 	setWindowsHookExA   *windows.Proc
 	callNextHookEx      *windows.Proc
