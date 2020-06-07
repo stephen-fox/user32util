@@ -10,6 +10,7 @@ import (
 
 const (
 	whKeyboardLl            = 13
+	whMouseLl               = 14
 	user32DllName           = "user32.dll"
 	setWindowsHookExAName   = "SetWindowsHookExA"
 	callNextHookExName      = "CallNextHookEx"
