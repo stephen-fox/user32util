@@ -32,6 +32,17 @@ const (
 	MouseEventFXUp            uint32 = 0x0100
 )
 
+// Various KeybdInput dwFlags.
+//
+// See the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-keybdinput
+const (
+	KeyEventFExtendedKey uint32 = 0x0001
+	KeyEventFKeyUp       uint32 = 0x0002
+	KeyEventFScanCode    uint32 = 0x0008
+	KeyEventFUnicode     uint32 = 0x0004
+)
+
 // See the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
 type MouseInput struct {
