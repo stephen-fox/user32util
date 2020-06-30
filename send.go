@@ -130,7 +130,7 @@ func SendHardwareInput(input HardwareInput, user32 *User32DLL) error {
 // lack of union support.
 //
 // https://github.com/JamesHovious/w32/blob/master/user32.go works around this
-// by using cgo. I have no desire to made cgo a dependency of the project.
+// by using cgo. I have no desire to make cgo a dependency of the project.
 //
 // From the Windows API documentation:
 //	Synthesizes keystrokes, mouse motions, and button clicks.
