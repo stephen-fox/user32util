@@ -2,6 +2,7 @@ package user32util
 
 import (
 	"golang.org/x/sys/windows"
+	"runtime"
 	"unsafe"
 )
 
@@ -46,6 +47,8 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 	done := make(chan error, 1)
 
 	go func() {
+		runtime.LockOSThread()
+
 		var hookHandle uintptr
 		var err error
 		hookHandle, _, err = user32.setWindowsHookExA.Call(
@@ -66,16 +69,20 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 			uintptr(0),
 			uintptr(0),
 		)
-		if hookHandle == 0 && err != nil {
+		if hookHandle == 0 {
 			ready <- hookSetupResult{err:err}
 			return
 		}
 
-		ready <- hookSetupResult{handle: hookHandle}
+		ready <- hookSetupResult{
+			handle: hookHandle,
+			tid:    windows.GetCurrentThreadId(),
+		}
 
 		// Needed to actually get events. Must be on same thread as hook.
-		// TODO: How does this get unblocked? It's blocked forever.
-		for r, _, _ := user32.getMessageW.Call(0, 0, 0, 0); r == 0; {}
+		var msg Msg
+		for r, _, _ := user32.getMessageW.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0); r != 0; {
+		}
 
 		done <- nil
 	}()
@@ -88,6 +95,7 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 	return &LowLevelMouseEventListener{
 		user32:     user32,
 		hookHandle: result.handle,
+		threadID:   result.tid,
 		fn:         fn,
 		done:       done,
 	}, nil
@@ -128,6 +136,7 @@ type LowLevelMouseEventListener struct {
 	user32     *User32DLL
 	fn         OnLowLevelMouseEventFunc
 	hookHandle uintptr
+	threadID   uint32
 	done       chan error
 }
 
@@ -140,6 +149,8 @@ func (o *LowLevelMouseEventListener) OnDone() <-chan error {
 // Release releases the underlying hook handle and stops the listener from
 // receiving any additional events.
 func (o *LowLevelMouseEventListener) Release() error {
+	o.user32.postThreadMessageW.Call(uintptr(o.threadID), wmQuit, 0, 0)
+
 	o.user32.unhookWindowsHookEx.Call(o.hookHandle)
 
 	o.hookHandle = 0

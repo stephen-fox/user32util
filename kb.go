@@ -2,6 +2,7 @@ package user32util
 
 import (
 	"golang.org/x/sys/windows"
+	"runtime"
 	"unsafe"
 )
 
@@ -17,6 +18,7 @@ const (
 	unhookWindowsHookExName = "UnhookWindowsHookEx"
 	getMessageWName         = "GetMessageW"
 	sendInputName           = "SendInput"
+	postThreadMessageWName  = "PostThreadMessageW"
 )
 
 type KeyboardButtonAction uintptr
@@ -45,6 +47,7 @@ type LowLevelKeyboardEventListener struct {
 	user32     *User32DLL
 	fn         OnLowLevelKeyboardEventFunc
 	hookHandle uintptr
+	threadID   uint32
 	done       chan error
 }
 
@@ -57,6 +60,8 @@ func (o *LowLevelKeyboardEventListener) OnDone() <-chan error {
 // Release releases the underlying hook handle and stops the listener from
 // receiving any additional events.
 func (o *LowLevelKeyboardEventListener) Release() error {
+	o.user32.postThreadMessageW.Call(uintptr(o.threadID), wmQuit, 0, 0)
+
 	o.user32.unhookWindowsHookEx.Call(o.hookHandle)
 
 	o.hookHandle = 0
@@ -97,6 +102,8 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 	done := make(chan error, 1)
 
 	go func() {
+		runtime.LockOSThread()
+
 		var hookHandle uintptr
 		var err error
 		hookHandle, _, err = user32.setWindowsHookExA.Call(
@@ -117,16 +124,19 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 			uintptr(0),
 			uintptr(0),
 		)
-		if hookHandle == 0 && err != nil {
+		if hookHandle == 0 {
 			ready <- hookSetupResult{err: err}
 			return
 		}
 
-		ready <- hookSetupResult{handle: hookHandle}
+		ready <- hookSetupResult{
+			handle: hookHandle,
+			tid:    windows.GetCurrentThreadId(),
+		}
 
 		// Needed to actually get events. Must be on same thread as hook.
-		// TODO: How does this get unblocked? It's blocked forever.
-		for r, _, _ := user32.getMessageW.Call(0, 0, 0, 0); r == 0; {
+		var msg Msg
+		for r, _, _ := user32.getMessageW.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0); r != 0; {
 		}
 
 		done <- nil
@@ -140,6 +150,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 	return &LowLevelKeyboardEventListener{
 		user32:     user32,
 		hookHandle: result.handle,
+		threadID:   result.tid,
 		fn:         fn,
 		done:       done,
 	}, nil
