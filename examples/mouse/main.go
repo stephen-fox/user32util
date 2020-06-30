@@ -5,20 +5,20 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/stephen-fox/winuserio"
+	"github.com/stephen-fox/user32util"
 )
 
 func main() {
-	user32, err := winuserio.LoadUser32DLL()
+	user32, err := user32util.LoadUser32DLL()
 	if err != nil {
 		log.Fatalf("failed to load user32.dll - %s", err.Error())
 	}
 
-	fn := func(event winuserio.LowLevelMouseEvent) {
+	fn := func(event user32util.LowLevelMouseEvent) {
 		log.Printf("mouse event: 0x%X", event.WParam)
 	}
 
-	listener, err := winuserio.NewLowLevelMouseListener(fn, user32)
+	listener, err := user32util.NewLowLevelMouseListener(fn, user32)
 	if err != nil {
 		log.Fatalf("failed to create mouse listener - %s", err.Error())
 	}

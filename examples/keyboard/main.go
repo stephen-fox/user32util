@@ -6,24 +6,24 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/stephen-fox/winuserio"
+	"github.com/stephen-fox/user32util"
 )
 
 func main() {
-	user32, err := winuserio.LoadUser32DLL()
+	user32, err := user32util.LoadUser32DLL()
 	if err != nil {
 		log.Fatalf("failed to load user32.dll - %s", err.Error())
 	}
 
-	fn := func(event winuserio.LowLevelKeyboardEvent) {
-		if event.KeyboardButtonAction() == winuserio.WMKeyDown {
+	fn := func(event user32util.LowLevelKeyboardEvent) {
+		if event.KeyboardButtonAction() == user32util.WMKeyDown {
 			fmt.Printf("%q (%d) down\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
-		} else if event.KeyboardButtonAction() == winuserio.WMKeyUp {
+		} else if event.KeyboardButtonAction() == user32util.WMKeyUp {
 			fmt.Printf("%q (%d) up\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
 		}
 	}
 
-	listener, err := winuserio.NewLowLevelKeyboardListener(fn, user32)
+	listener, err := user32util.NewLowLevelKeyboardListener(fn, user32)
 	if err != nil {
 		log.Fatalf("failed to create listener - %s", err.Error())
 	}

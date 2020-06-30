@@ -1,4 +1,4 @@
-package winuserio
+package user32util
 
 import (
 	"fmt"

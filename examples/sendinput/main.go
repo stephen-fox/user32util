@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/stephen-fox/winuserio"
+	"github.com/stephen-fox/user32util"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 
 	flag.Parse()
 
-	user32, err := winuserio.LoadUser32DLL()
+	user32, err := user32util.LoadUser32DLL()
 	if err != nil {
 		log.Fatalf("failed to load user32.dll - %s", err.Error())
 	}
@@ -25,8 +25,8 @@ func main() {
 
 			time.Sleep(*sendAfter)
 
-			err := winuserio.SendMouseInput(winuserio.MouseInput{
-				DwFlags: winuserio.MouseEventFRightDown,
+			err := user32util.SendMouseInput(user32util.MouseInput{
+				DwFlags: user32util.MouseEventFRightDown,
 			}, user32)
 			if err != nil {
 				log.Fatalf("failed to send input - %s", err.Error())
@@ -38,7 +38,7 @@ func main() {
 
 			time.Sleep(*sendAfter)
 
-			err := winuserio.SendKeydbInput(winuserio.KeybdInput{
+			err := user32util.SendKeydbInput(user32util.KeybdInput{
 				WVK: 0x41,
 			}, user32)
 			if err != nil {

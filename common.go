@@ -1,4 +1,4 @@
-package winuserio
+package user32util
 
 import (
 	"golang.org/x/sys/windows"

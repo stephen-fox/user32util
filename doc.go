@@ -1,2 +1,3 @@
-// Package winuserio provides a rudimentary Windows user IO helper library.
-package winuserio
+// Package user32util provides helper functionality for working with
+// Windows' user32 library.
+package user32util
