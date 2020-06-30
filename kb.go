@@ -9,18 +9,6 @@ import (
 // The follow code is based on work by jimmycliff obonyo:
 // https://gist.github.com/obonyojimmy/52d836a1b31e2fc914d19a81bd2e0a1b
 
-const (
-	whKeyboardLl            = 13
-	whMouseLl               = 14
-	user32DllName           = "user32.dll"
-	setWindowsHookExAName   = "SetWindowsHookExA"
-	callNextHookExName      = "CallNextHookEx"
-	unhookWindowsHookExName = "UnhookWindowsHookEx"
-	getMessageWName         = "GetMessageW"
-	sendInputName           = "SendInput"
-	postThreadMessageWName  = "PostThreadMessageW"
-)
-
 type KeyboardButtonAction uintptr
 
 const (

@@ -5,8 +5,21 @@ import (
 	"unsafe"
 )
 
+// Various WM codes.
 const (
 	wmQuit = 0x0012
+)
+
+const (
+	whKeyboardLl            = 13
+	whMouseLl               = 14
+	user32DllName           = "user32.dll"
+	setWindowsHookExAName   = "SetWindowsHookExA"
+	callNextHookExName      = "CallNextHookEx"
+	unhookWindowsHookExName = "UnhookWindowsHookEx"
+	getMessageWName         = "GetMessageW"
+	sendInputName           = "SendInput"
+	postThreadMessageWName  = "PostThreadMessageW"
 )
 
 // LoadUser32DLL loads the user32 DLL into memory.
