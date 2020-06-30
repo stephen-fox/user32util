@@ -29,7 +29,7 @@ func main() {
 	signal.Notify(interrupts, os.Interrupt)
 	select {
 	case err := <-listener.OnDone():
-		log.Fatalf("keyboard listener stopped unexpectedly - %v", err)
+		log.Fatalf("mouse listener stopped unexpectedly - %v", err)
 	case <-interrupts:
 	}
 
