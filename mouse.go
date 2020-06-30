@@ -1,8 +1,6 @@
 package user32util
 
 import (
-	"golang.org/x/sys/windows"
-	"runtime"
 	"unsafe"
 )
 
@@ -43,59 +41,25 @@ func (o LowLevelMouseEvent) MouseButtonAction() MouseButtonAction {
 }
 
 func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*LowLevelMouseEventListener, error) {
-	ready := make(chan hookSetupResult)
-	done := make(chan error, 1)
-
-	go func() {
-		runtime.LockOSThread()
-
-		var hookHandle uintptr
-		var err error
-		hookHandle, _, err = user32.setWindowsHookExA.Call(
-			uintptr(whMouseLl),
-			uintptr(windows.NewCallback(func(nCode int, wParam uintptr, lParam uintptr) uintptr {
-				if nCode == 0 {
-					fn(LowLevelMouseEvent{
-						WParam: wParam,
-						LParam: lParam,
-						Struct: (*MsllHookStruct)(unsafe.Pointer(lParam)),
-					})
-				}
-
-				nextHookCallResult, _, _ := user32.callNextHookEx.Call(hookHandle, uintptr(nCode), wParam, lParam)
-
-				return nextHookCallResult
-			})),
-			uintptr(0),
-			uintptr(0),
-		)
-		if hookHandle == 0 {
-			ready <- hookSetupResult{err:err}
-			return
+	callBack := func(nCode int, wParam uintptr, lParam uintptr) {
+		if nCode == 0 {
+			fn(LowLevelMouseEvent{
+				WParam: wParam,
+				LParam: lParam,
+				Struct: (*MsllHookStruct)(unsafe.Pointer(lParam)),
+			})
 		}
+	}
 
-		ready <- hookSetupResult{
-			handle: hookHandle,
-			tid:    windows.GetCurrentThreadId(),
-		}
-
-		// Needed to actually get events. Must be on same thread as hook.
-		var msg Msg
-		for r, _, _ := user32.getMessageW.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0); r != 0; {
-		}
-
-		done <- nil
-	}()
-
-	result := <-ready
-	if result.err != nil {
-		return nil, result.err
+	handle, threadID, done, err := setWindowsHookEx(whMouseLl, callBack, user32)
+	if err != nil {
+		return nil, err
 	}
 
 	return &LowLevelMouseEventListener{
 		user32:     user32,
-		hookHandle: result.handle,
-		threadID:   result.tid,
+		hookHandle: handle,
+		threadID:   threadID,
 		fn:         fn,
 		done:       done,
 	}, nil
@@ -137,7 +101,7 @@ type LowLevelMouseEventListener struct {
 	fn         OnLowLevelMouseEventFunc
 	hookHandle uintptr
 	threadID   uint32
-	done       chan error
+	done       <-chan error
 }
 
 // OnDone returns a channel that is written to when the event listener exits.

@@ -2,6 +2,7 @@ package user32util
 
 import (
 	"golang.org/x/sys/windows"
+	"runtime"
 	"unsafe"
 )
 
@@ -14,7 +15,7 @@ const (
 	whKeyboardLl            = 13
 	whMouseLl               = 14
 	user32DllName           = "user32.dll"
-	setWindowsHookExAName   = "SetWindowsHookExA"
+	setWindowsHookExWName   = "SetWindowsHookExW"
 	callNextHookExName      = "CallNextHookEx"
 	unhookWindowsHookExName = "UnhookWindowsHookEx"
 	getMessageWName         = "GetMessageW"
@@ -40,7 +41,7 @@ func LoadUser32DLL() (*User32DLL, error) {
 		Handle: windows.Handle(temp.Handle()),
 	}
 
-	set, err := user32.FindProc(setWindowsHookExAName)
+	setWindowsHookExW, err := user32.FindProc(setWindowsHookExWName)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +73,7 @@ func LoadUser32DLL() (*User32DLL, error) {
 
 	return &User32DLL{
 		user32:              user32,
-		setWindowsHookExA:   set,
+		setWindowsHookExW:   setWindowsHookExW,
 		callNextHookEx:      call,
 		unhookWindowsHookEx: unhook,
 		getMessageW:         getMessageW,
@@ -85,12 +86,76 @@ func LoadUser32DLL() (*User32DLL, error) {
 // this struct's fields.
 type User32DLL struct {
 	user32              *windows.DLL
-	setWindowsHookExA   *windows.Proc
+	setWindowsHookExW   *windows.Proc
 	callNextHookEx      *windows.Proc
 	unhookWindowsHookEx *windows.Proc
 	getMessageW         *windows.Proc
 	sendInput           *windows.Proc
 	postThreadMessageW  *windows.Proc
+}
+
+// onHookCalledFunc defines what happens when a Windows hook created using
+// "SetWindowsHookEx*()" is called.
+type onHookCalledFunc func(nCode int, wParam uintptr, lParam uintptr)
+
+// setWindowsHookEx wraps the 'SetWindowsHookExW()' system call, creating a new
+// Windows hook for the given hook ID and callback. On success, it returns
+// a handle to the hook, the ID of thread associated with the hook, and a
+// channel that is written to when the hook exits.
+//
+// From the Windows API documentation:
+//	Installs an application-defined hook procedure into a hook chain.
+//	You would install a hook procedure to monitor the system for certain
+//	types of events. These events are associated either with a specific
+//	thread or with all threads in the same desktop as the calling thread.
+//
+// Refer to the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexw
+func setWindowsHookEx(hookID int, callBack onHookCalledFunc, user32 *User32DLL) (uintptr, uint32, <-chan error, error) {
+	ready := make(chan hookSetupResult)
+	done := make(chan error, 1)
+
+	go func() {
+		runtime.LockOSThread()
+
+		var hookHandle uintptr
+		var err error
+		hookHandle, _, err = user32.setWindowsHookExW.Call(
+			uintptr(hookID),
+			windows.NewCallback(func(nCode int, wParam uintptr, lParam uintptr) uintptr {
+				callBack(nCode, wParam, lParam)
+
+				nextHookCallResult, _, _ := user32.callNextHookEx.Call(hookHandle, uintptr(nCode), wParam, lParam)
+
+				return nextHookCallResult
+			}),
+			0,
+			0,
+		)
+		if hookHandle == 0 {
+			ready <- hookSetupResult{err:err}
+			return
+		}
+
+		ready <- hookSetupResult{
+			handle: hookHandle,
+			tid:    windows.GetCurrentThreadId(),
+		}
+
+		// Needed to actually get events. Must be on same thread as hook.
+		var msg Msg
+		for r, _, _ := user32.getMessageW.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0); r != 0; {
+		}
+
+		done <- nil
+	}()
+
+	result := <-ready
+	if result.err != nil {
+		return 0, 0, nil, result.err
+	}
+
+	return result.handle, result.tid, done, nil
 }
 
 type hookSetupResult struct {
