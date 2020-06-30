@@ -4,6 +4,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+// LoadUser32DLL loads the user32 DLL into memory.
 func LoadUser32DLL() (*User32DLL, error) {
 	// TODO: Hack to avoid using unsafe 'windows.LoadDLL()' while
 	//  retaining full control over when a DLL is loaded.
@@ -56,6 +57,8 @@ func LoadUser32DLL() (*User32DLL, error) {
 	}, nil
 }
 
+// User32DLL represents the user32 DLL, mapping several of its procedures to
+// this struct's fields.
 type User32DLL struct {
 	user32              *windows.DLL
 	setWindowsHookExA   *windows.Proc

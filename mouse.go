@@ -34,7 +34,7 @@ type OnLowLevelMouseEventFunc func(event LowLevelMouseEvent)
 type LowLevelMouseEvent struct {
 	WParam uintptr
 	LParam uintptr
-	S      *MsllHookStruct
+	Struct *MsllHookStruct
 }
 
 func (o LowLevelMouseEvent) MouseButtonAction() MouseButtonAction {
@@ -55,7 +55,7 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 					fn(LowLevelMouseEvent{
 						WParam: wParam,
 						LParam: lParam,
-						S:      (*MsllHookStruct)(unsafe.Pointer(lParam)),
+						Struct: (*MsllHookStruct)(unsafe.Pointer(lParam)),
 					})
 				}
 
@@ -93,7 +93,10 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 	}, nil
 }
 
-// See the following Windows API document for more information:
+// From the Windows API documentation:
+//	Contains information about a low-level mouse input event.
+//
+// Refer to the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-msllhookstruct
 type MsllHookStruct struct {
 	Point       Point
@@ -103,13 +106,24 @@ type MsllHookStruct struct {
 	DwExtraInfo uintptr
 }
 
+// From the Windows API documentation:
+//	The POINT structure defines the x- and y- coordinates of a point.
+//
+// Refer to the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/previous-versions/dd162805%28v=vs.85%29
 type Point struct {
 	X int32
 	Y int32
 }
 
-// See the following Windows API document for more information:
-// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644986(v=vs.85)
+// From the Windows API documentation:
+//	An application-defined or library-defined callback function
+//	used with the SetWindowsHookEx function. The system calls
+//	this function every time a new mouse input event is about to
+//	be posted into a thread input queue.
+//
+// Refer to the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644986%28v=vs.85%29
 type LowLevelMouseEventListener struct {
 	user32     *User32DLL
 	fn         OnLowLevelMouseEventFunc
@@ -117,10 +131,14 @@ type LowLevelMouseEventListener struct {
 	done       chan error
 }
 
+// OnDone returns a channel that is written to when the event listener exits.
+// A non-nil error is written if an error caused the listener to exit.
 func (o *LowLevelMouseEventListener) OnDone() <-chan error {
 	return o.done
 }
 
+// Release releases the underlying hook handle and stops the listener from
+// receiving any additional events.
 func (o *LowLevelMouseEventListener) Release() error {
 	o.user32.unhookWindowsHookEx.Call(o.hookHandle)
 

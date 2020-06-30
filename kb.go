@@ -30,8 +30,17 @@ const (
 
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
-// See the following Windows API document for more information:
-// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644985(v=vs.85)
+// LowLevelKeyboardEventListener represents an instance of the low level
+// keyboard event listener.
+//
+// From the Windows API documentation:
+//	An application-defined or library-defined callback function used
+//	with the SetWindowsHookEx function. The system calls this function
+//	every time a new keyboard input event is about to be posted into
+//	a thread input queue.
+//
+// Refer to the following Windows API document for more information:
+// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms644985%28v=vs.85%29
 type LowLevelKeyboardEventListener struct {
 	user32     *User32DLL
 	fn         OnLowLevelKeyboardEventFunc
@@ -39,10 +48,14 @@ type LowLevelKeyboardEventListener struct {
 	done       chan error
 }
 
+// OnDone returns a channel that is written to when the event listener exits.
+// A non-nil error is written if an error caused the listener to exit.
 func (o *LowLevelKeyboardEventListener) OnDone() <-chan error {
 	return o.done
 }
 
+// Release releases the underlying hook handle and stops the listener from
+// receiving any additional events.
 func (o *LowLevelKeyboardEventListener) Release() error {
 	o.user32.unhookWindowsHookEx.Call(o.hookHandle)
 
@@ -51,21 +64,21 @@ func (o *LowLevelKeyboardEventListener) Release() error {
 	return nil
 }
 
+// LowLevelKeyboardEvent represents a single keyboard event.
 type LowLevelKeyboardEvent struct {
-	wParam uintptr
-	lParam uintptr
-	s      *KbdllHookStruct
+	WParam uintptr
+	LParam uintptr
+	Struct *KbdllHookStruct
 }
 
 func (o LowLevelKeyboardEvent) KeyboardButtonAction() KeyboardButtonAction {
-	return KeyboardButtonAction(o.wParam)
+	return KeyboardButtonAction(o.WParam)
 }
 
-func (o LowLevelKeyboardEvent) HookStruct() *KbdllHookStruct {
-	return o.s
-}
-
-// See the following Windows API document for more information:
+// From the Windows API documentation:
+//	Contains information about a low-level keyboard input event.
+//
+// Refer to the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-kbdllhookstruct
 type KbdllHookStruct struct {
 	VkCode      uint32
@@ -91,9 +104,9 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 			uintptr(windows.NewCallback(func(nCode int, wParam uintptr, lParam uintptr) uintptr {
 				if nCode == 0 {
 					fn(LowLevelKeyboardEvent{
-						wParam: wParam,
-						lParam: lParam,
-						s:      (*KbdllHookStruct)(unsafe.Pointer(lParam)),
+						WParam: wParam,
+						LParam: lParam,
+						Struct: (*KbdllHookStruct)(unsafe.Pointer(lParam)),
 					})
 				}
 

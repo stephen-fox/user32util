@@ -17,9 +17,9 @@ func main() {
 
 	fn := func(event user32util.LowLevelKeyboardEvent) {
 		if event.KeyboardButtonAction() == user32util.WMKeyDown {
-			fmt.Printf("%q (%d) down\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
+			fmt.Printf("%q (%d) down\n", event.Struct.VirtualKeyCode(), event.Struct.VkCode)
 		} else if event.KeyboardButtonAction() == user32util.WMKeyUp {
-			fmt.Printf("%q (%d) up\n", event.HookStruct().VirtualKeyCode(), event.HookStruct().VkCode)
+			fmt.Printf("%q (%d) up\n", event.Struct.VirtualKeyCode(), event.Struct.VkCode)
 		}
 	}
 
