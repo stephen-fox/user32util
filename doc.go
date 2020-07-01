@@ -1,7 +1,7 @@
 // Package user32util provides helper functionality for working with
 // Windows' user32 library.
 //
-// Many of the library's functions require that you first load the user32 DLL:
+// Many of these functions require that you first load the user32 DLL:
 //	user32, err := user32util.LoadUser32DLL()
 //	if err != nil {
 //		// Error handling.

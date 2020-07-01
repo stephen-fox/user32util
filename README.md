@@ -11,10 +11,7 @@ user32 library.
 ## APIs
 The library offers several helper functions for working with user32.
 
-Most of the library's functions require that you load the DLL. To do so,
-simply call `LoadUser32DLL()`:
-
-Many of the library's functions require that you first load the user32 DLL:
+Many of these functions require that you first load the user32 DLL:
 ```go
 user32, err := user32util.LoadUser32DLL()
 if err != nil {
