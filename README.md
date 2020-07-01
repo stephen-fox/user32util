@@ -1,4 +1,10 @@
 # user32util
+
+[![GoDoc][godoc-badge]][godoc]
+
+[godoc-badge]: https://godoc.org/github.com/stephen-fox/user32util?status.svg
+[godoc]: https://godoc.org/github.com/stephen-fox/user32util
+
 Package user32util provides helper functionality for working with Windows'
 user32 library.
 
