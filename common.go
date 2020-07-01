@@ -94,6 +94,11 @@ type User32DLL struct {
 	postThreadMessageW  *windows.Proc
 }
 
+// Release releases the underlying DLL.
+func (o *User32DLL) Release() error {
+	return o.user32.Release()
+}
+
 // onHookCalledFunc defines what happens when a Windows hook created using
 // "SetWindowsHookEx*()" is called.
 type onHookCalledFunc func(nCode int, wParam uintptr, lParam uintptr)

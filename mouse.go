@@ -40,6 +40,10 @@ func (o LowLevelMouseEvent) MouseButtonAction() MouseButtonAction {
 	return MouseButtonAction(o.WParam)
 }
 
+// NewLowLevelMouseListener instantiates a new mouse input listener using
+// the LowLevelMouseProc Windows hook.
+//
+// Refer to LowLevelMouseEventListener for more information.
 func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*LowLevelMouseEventListener, error) {
 	callBack := func(nCode int, wParam uintptr, lParam uintptr) {
 		if nCode == 0 {
@@ -88,6 +92,9 @@ type Point struct {
 	Y int32
 }
 
+// LowLevelMouseEventListener represents an instance of the
+// LowLevelMouseProc Windows hook.
+//
 // From the Windows API documentation:
 //	An application-defined or library-defined callback function
 //	used with the SetWindowsHookEx function. The system calls

@@ -18,8 +18,8 @@ const (
 
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
-// LowLevelKeyboardEventListener represents an instance of the low level
-// keyboard event listener.
+// LowLevelKeyboardEventListener represents an instance of the
+// LowLevelKeyboardProc Windows hook.
 //
 // From the Windows API documentation:
 //	An application-defined or library-defined callback function used
@@ -83,6 +83,10 @@ func (o KbdllHookStruct) VirtualKeyCode() byte {
 	return byte(o.VkCode)
 }
 
+// NewLowLevelKeyboardListener instantiates a new keyboard input listener using
+// the LowLevelKeyboardProc Windows hook.
+//
+// Refer to LowLevelKeyboardEventListener for more information.
 func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32DLL) (*LowLevelKeyboardEventListener, error) {
 	callBack := func(nCode int, wParam uintptr, lParam uintptr) {
 		if nCode == 0 {

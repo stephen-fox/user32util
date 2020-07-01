@@ -13,7 +13,7 @@ const (
 
 // Various MouseInput dwFlags.
 //
-// See the following Windows API document for more information:
+// Refer to the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
 const (
 	MouseEventFAbsolute       uint32 = 0x8000
@@ -34,7 +34,7 @@ const (
 
 // Various KeybdInput dwFlags.
 //
-// See the following Windows API document for more information:
+// Refer to the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-keybdinput
 const (
 	KeyEventFExtendedKey uint32 = 0x0001
@@ -135,7 +135,7 @@ func SendHardwareInput(input HardwareInput, user32 *User32DLL) error {
 // From the Windows API documentation:
 //	Synthesizes keystrokes, mouse motions, and button clicks.
 //
-// See the following Windows API document for more information:
+// Refer to the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput
 func SendInput(numInputs uint, unsafePointerToVal unsafe.Pointer, inputStructSizeBytes uintptr, user32 *User32DLL) error {
 	numSent, _, err := user32.sendInput.Call(
