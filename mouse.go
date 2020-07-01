@@ -51,7 +51,7 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 		}
 	}
 
-	handle, threadID, done, err := setWindowsHookEx(whMouseLl, callBack, user32)
+	handle, threadID, done, err := setWindowsHookExW(whMouseLl, callBack, user32)
 	if err != nil {
 		return nil, err
 	}

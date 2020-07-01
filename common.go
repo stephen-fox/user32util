@@ -98,10 +98,10 @@ type User32DLL struct {
 // "SetWindowsHookEx*()" is called.
 type onHookCalledFunc func(nCode int, wParam uintptr, lParam uintptr)
 
-// setWindowsHookEx wraps the 'SetWindowsHookExW()' system call, creating a new
-// Windows hook for the given hook ID and callback. On success, it returns
-// a handle to the hook, the ID of thread associated with the hook, and a
-// channel that is written to when the hook exits.
+// setWindowsHookExW wraps the 'SetWindowsHookExW()' system call, creating
+// a new Windows hook for the given hook ID and callback. On success,
+// it returns a handle to the hook, the ID of thread associated with the hook,
+// and a channel that is written to when the hook exits.
 //
 // From the Windows API documentation:
 //	Installs an application-defined hook procedure into a hook chain.
@@ -111,7 +111,7 @@ type onHookCalledFunc func(nCode int, wParam uintptr, lParam uintptr)
 //
 // Refer to the following Windows API document for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowshookexw
-func setWindowsHookEx(hookID int, callBack onHookCalledFunc, user32 *User32DLL) (uintptr, uint32, <-chan error, error) {
+func setWindowsHookExW(hookID int, callBack onHookCalledFunc, user32 *User32DLL) (uintptr, uint32, <-chan error, error) {
 	ready := make(chan hookSetupResult)
 	done := make(chan error, 1)
 

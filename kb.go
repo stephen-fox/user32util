@@ -94,7 +94,7 @@ func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32D
 		}
 	}
 
-	handle, threadID, done, err := setWindowsHookEx(whKeyboardLl, callBack, user32)
+	handle, threadID, done, err := setWindowsHookExW(whKeyboardLl, callBack, user32)
 	if err != nil {
 		return nil, err
 	}
