@@ -3,7 +3,31 @@ Package user32util provides helper functionality for working with Windows'
 user32 library.
 
 ## APIs
-TODO
+The library offers several helper functions for working with user32.
+
+Most of the library's functions require that you load the DLL. To do so,
+simply call `LoadUser32DLL()`:
+
+Many of the library's functions require that you first load the user32 DLL:
+```go
+user32, err := user32util.LoadUser32DLL()
+if err != nil {
+	// Error handling.
+}
+```
+
+#### Input listeners
+
+- `NewLowLevelMouseListener()` - Starts a listener that reports on mouse input
+- `NewLowLevelKeyboardListener()` - Starts a listener that reports on
+keyboard input
+
+#### Send input
+
+- `SendKeydbInput()` - Sends a single keyboard input
+- `SendMouseInput()` - Sends a single mouse input
+- `SendInput()` - Send input implements the `SendInput()` Windows system call
+- `SendHardwareInput()` - Sends a single hardware input
 
 ## Examples
 The following examples can be found in the [examples/ directory](examples/):
