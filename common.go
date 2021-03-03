@@ -21,6 +21,7 @@ const (
 	getMessageWName         = "GetMessageW"
 	sendInputName           = "SendInput"
 	postThreadMessageWName  = "PostThreadMessageW"
+	setCursorPosName        = "SetCursorPos"
 )
 
 // LoadUser32DLL loads the user32 DLL into memory.
@@ -71,6 +72,11 @@ func LoadUser32DLL() (*User32DLL, error) {
 		return nil, err
 	}
 
+	setCursorPos, err := user32.FindProc(setCursorPosName)
+	if err != nil {
+		return nil, err
+	}
+
 	return &User32DLL{
 		user32:              user32,
 		setWindowsHookExW:   setWindowsHookExW,
@@ -79,6 +85,7 @@ func LoadUser32DLL() (*User32DLL, error) {
 		getMessageW:         getMessageW,
 		sendInput:           sendInput,
 		postThreadMessageW:  postThreadMessageW,
+		setCursorPos:        setCursorPos,
 	}, nil
 }
 
@@ -92,6 +99,7 @@ type User32DLL struct {
 	getMessageW         *windows.Proc
 	sendInput           *windows.Proc
 	postThreadMessageW  *windows.Proc
+	setCursorPos        *windows.Proc
 }
 
 // Release releases the underlying DLL.

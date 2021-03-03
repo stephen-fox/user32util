@@ -16,7 +16,7 @@ const (
 )
 
 // Other mouse related message types (unsure where they are used, but they
-// appear in the 'mouseData' field documentation.
+// appear in the 'mouseData' field documentation).
 const (
 	WMXButtonDown     MouseButtonAction = 0x020B
 	WMXButtonUp       MouseButtonAction = 0x020C
@@ -127,4 +127,23 @@ func (o *LowLevelMouseEventListener) Release() error {
 	o.hookHandle = 0
 
 	return nil
+}
+
+// SetCursorPos sets the mouse cursor position.
+//
+// From the Windows API documentation:
+// 	Moves the cursor to the specified screen coordinates. If the new
+//	coordinates are not within the screen rectangle set by the most
+//	recent ClipCursor function call, the system automatically adjusts
+//	the coordinates so that the cursor stays within the rectangle.
+//
+// Please refer to the Windows API documentation for more information:
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setcursorpos
+func SetCursorPos(x int32, y int32, user32 *User32DLL) (bool, error) {
+	ret, _, err := user32.setCursorPos.Call(uintptr(x), uintptr(y))
+	if ret == 1 {
+		return true, nil
+	}
+
+	return false, err
 }
