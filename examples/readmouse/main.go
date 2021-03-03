@@ -15,7 +15,7 @@ func main() {
 	}
 
 	fn := func(event user32util.LowLevelMouseEvent) {
-		log.Printf("mouse event: 0x%X", event.WParam)
+		log.Printf("mouse event: %+v", event.Struct.Point)
 	}
 
 	listener, err := user32util.NewLowLevelMouseListener(fn, user32)
