@@ -13,6 +13,8 @@ import (
 )
 
 func main() {
+	sleep := flag.Duration("sleep", 5*time.Second, "time.Duration to sleep between clicks")
+
 	flag.Parse()
 
 	dll, err := user32util.LoadUser32DLL()
@@ -52,13 +54,13 @@ func main() {
 		}
 
 		log.Printf("clicking between %+v", points)
-		clickBetween(points, dll)
+		clickBetween(points, *sleep, dll)
 	}
 }
 
 func getPoints(dll *user32util.User32DLL) {
 	listener, err := user32util.NewLowLevelMouseListener(func(event user32util.LowLevelMouseEvent) {
-		log.Printf("point: %+v", event.Struct.Point)
+		log.Printf("mouse x,y: %d,%d", event.Struct.Point.X, event.Struct.Point.Y)
 	}, dll)
 	if err != nil {
 		log.Fatalf("failed to start listner - %s", err)
@@ -74,7 +76,7 @@ func getPoints(dll *user32util.User32DLL) {
 	}
 }
 
-func clickBetween(sequentialClicks []user32util.Point, dll *user32util.User32DLL) {
+func clickBetween(sequentialClicks []user32util.Point, sleep time.Duration, dll *user32util.User32DLL) {
 	for {
 		for _, point := range sequentialClicks {
 			log.Printf("moving to point %+v", point)
@@ -99,7 +101,7 @@ func clickBetween(sequentialClicks []user32util.Point, dll *user32util.User32DLL
 				log.Fatalf("failed to send mouse up input - %s", err)
 			}
 
-			time.Sleep(5*time.Second)
+			time.Sleep(sleep)
 		}
 	}
 }
