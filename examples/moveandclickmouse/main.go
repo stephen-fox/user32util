@@ -101,6 +101,7 @@ func clickBetween(sequentialClicks []user32util.Point, sleep time.Duration, dll 
 				log.Fatalf("failed to send mouse up input - %s", err)
 			}
 
+			log.Printf("sleeping for %s", sleep.String())
 			time.Sleep(sleep)
 		}
 	}
