@@ -41,3 +41,9 @@ prints them to stderr
 to stderr
 - [sendinput](examples/sendinput/main.go) - Sends keyboard or mouse inputs
 to Windows
+
+## Special thanks
+This library is influenced by jimmycliff obonyo's work in this GitHub gist:
+https://gist.github.com/obonyojimmy/52d836a1b31e2fc914d19a81bd2e0a1b
+
+Thank you for documenting your work, jimmycliff.
