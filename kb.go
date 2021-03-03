@@ -4,17 +4,46 @@ import (
 	"unsafe"
 )
 
-// The follow code is based on work by jimmycliff obonyo:
-// https://gist.github.com/obonyojimmy/52d836a1b31e2fc914d19a81bd2e0a1b
-
-type KeyboardButtonAction uintptr
-
+// LowLevelKeyboardEvent wParam flags.
 const (
 	WMKeyDown       KeyboardButtonAction = 256
 	WMKeyUp         KeyboardButtonAction = 257
 	WHSystemKeyDown KeyboardButtonAction = 260
 	WMSystemKeyUp   KeyboardButtonAction = 261
 )
+
+// KeyboardButtonAction is an alias for the values contained in the
+// wParam field fo LowLevelKeyboardEvent.
+type KeyboardButtonAction uintptr
+
+// NewLowLevelKeyboardListener instantiates a new keyboard input listener using
+// the LowLevelKeyboardProc Windows hook.
+//
+// Refer to LowLevelKeyboardEventListener for more information.
+func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32DLL) (*LowLevelKeyboardEventListener, error) {
+	callBack := func(nCode int, wParam uintptr, lParam uintptr) {
+		if nCode == 0 {
+			fn(LowLevelKeyboardEvent{
+				WParam: wParam,
+				LParam: lParam,
+				Struct: (*KbdllHookStruct)(unsafe.Pointer(lParam)),
+			})
+		}
+	}
+
+	handle, threadID, done, err := setWindowsHookExW(whKeyboardLl, callBack, user32)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LowLevelKeyboardEventListener{
+		user32:     user32,
+		hookHandle: handle,
+		threadID:   threadID,
+		fn:         fn,
+		done:       done,
+	}, nil
+}
 
 type OnLowLevelKeyboardEventFunc func(event LowLevelKeyboardEvent)
 
@@ -81,33 +110,4 @@ type KbdllHookStruct struct {
 
 func (o KbdllHookStruct) VirtualKeyCode() byte {
 	return byte(o.VkCode)
-}
-
-// NewLowLevelKeyboardListener instantiates a new keyboard input listener using
-// the LowLevelKeyboardProc Windows hook.
-//
-// Refer to LowLevelKeyboardEventListener for more information.
-func NewLowLevelKeyboardListener(fn OnLowLevelKeyboardEventFunc, user32 *User32DLL) (*LowLevelKeyboardEventListener, error) {
-	callBack := func(nCode int, wParam uintptr, lParam uintptr) {
-		if nCode == 0 {
-			fn(LowLevelKeyboardEvent{
-				WParam: wParam,
-				LParam: lParam,
-				Struct: (*KbdllHookStruct)(unsafe.Pointer(lParam)),
-			})
-		}
-	}
-
-	handle, threadID, done, err := setWindowsHookExW(whKeyboardLl, callBack, user32)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LowLevelKeyboardEventListener{
-		user32:     user32,
-		hookHandle: handle,
-		threadID:   threadID,
-		fn:         fn,
-		done:       done,
-	}, nil
 }

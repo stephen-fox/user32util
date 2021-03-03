@@ -26,19 +26,9 @@ const (
 	WMNCXButtonDblClk MouseButtonAction = 0x00AD
 )
 
+// MouseButtonAction is an alias for the values contained in the
+// wParam field fo LowLevelKeyboardEvent.
 type MouseButtonAction uintptr
-
-type OnLowLevelMouseEventFunc func(event LowLevelMouseEvent)
-
-type LowLevelMouseEvent struct {
-	WParam uintptr
-	LParam uintptr
-	Struct *MsllHookStruct
-}
-
-func (o LowLevelMouseEvent) MouseButtonAction() MouseButtonAction {
-	return MouseButtonAction(o.WParam)
-}
 
 // NewLowLevelMouseListener instantiates a new mouse input listener using
 // the LowLevelMouseProc Windows hook.
@@ -67,6 +57,18 @@ func NewLowLevelMouseListener(fn OnLowLevelMouseEventFunc, user32 *User32DLL) (*
 		fn:         fn,
 		done:       done,
 	}, nil
+}
+
+type OnLowLevelMouseEventFunc func(event LowLevelMouseEvent)
+
+type LowLevelMouseEvent struct {
+	WParam uintptr
+	LParam uintptr
+	Struct *MsllHookStruct
+}
+
+func (o LowLevelMouseEvent) MouseButtonAction() MouseButtonAction {
+	return MouseButtonAction(o.WParam)
 }
 
 // From the Windows API documentation:
@@ -137,7 +139,7 @@ func (o *LowLevelMouseEventListener) Release() error {
 //	recent ClipCursor function call, the system automatically adjusts
 //	the coordinates so that the cursor stays within the rectangle.
 //
-// Please refer to the Windows API documentation for more information:
+// Refer to the Windows API documentation for more information:
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setcursorpos
 func SetCursorPos(x int32, y int32, user32 *User32DLL) (bool, error) {
 	ret, _, err := user32.setCursorPos.Call(uintptr(x), uintptr(y))
