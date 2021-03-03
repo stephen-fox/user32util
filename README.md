@@ -35,6 +35,10 @@ keyboard input
 ## Examples
 The following examples can be found in the [examples/ directory](examples/):
 
+- [moveandclickmouse](examples/moveandclickmouse/main.go) - Moves the mouse
+and then left clicks on the new position. Takes inputs as command line
+arguments in `x,y` format. E.g., `example 1221,244 460,892`. Coordinates
+can be printed by running: `example print`
 - [readkeyboard](examples/readkeyboard/main.go) - Reads keyboard presses and
 prints them to stderr
 - [readmouse](examples/readmouse/main.go) - Reads mouse inputs and prints them
