@@ -1,4 +1,4 @@
-module github.com/stephen-fox/user32util
+module github.com/alexkallai/user32util
 
 go 1.12
 

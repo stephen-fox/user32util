@@ -1,9 +1,10 @@
 package user32util
 
 import (
-	"golang.org/x/sys/windows"
 	"runtime"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 // Various WM codes.
@@ -22,6 +23,7 @@ const (
 	sendInputName           = "SendInput"
 	postThreadMessageWName  = "PostThreadMessageW"
 	setCursorPosName        = "SetCursorPos"
+	getCursorPosName        = "GetCursorPos"
 )
 
 // LoadUser32DLL loads the user32 DLL into memory.
@@ -77,6 +79,11 @@ func LoadUser32DLL() (*User32DLL, error) {
 		return nil, err
 	}
 
+	getCursorPos, err := user32.FindProc(getCursorPosName)
+	if err != nil {
+		return nil, err
+	}
+
 	return &User32DLL{
 		user32:              user32,
 		setWindowsHookExW:   setWindowsHookExW,
@@ -86,6 +93,7 @@ func LoadUser32DLL() (*User32DLL, error) {
 		sendInput:           sendInput,
 		postThreadMessageW:  postThreadMessageW,
 		setCursorPos:        setCursorPos,
+		getCursorPos:        getCursorPos,
 	}, nil
 }
 
@@ -100,6 +108,7 @@ type User32DLL struct {
 	sendInput           *windows.Proc
 	postThreadMessageW  *windows.Proc
 	setCursorPos        *windows.Proc
+	getCursorPos        *windows.Proc
 }
 
 // Release releases the underlying DLL.
@@ -117,6 +126,7 @@ type onHookCalledFunc func(nCode int, wParam uintptr, lParam uintptr)
 // and a channel that is written to when the hook exits.
 //
 // From the Windows API documentation:
+//
 //	Installs an application-defined hook procedure into a hook chain.
 //	You would install a hook procedure to monitor the system for certain
 //	types of events. These events are associated either with a specific
@@ -146,7 +156,7 @@ func setWindowsHookExW(hookID int, callBack onHookCalledFunc, user32 *User32DLL)
 			0,
 		)
 		if hookHandle == 0 {
-			ready <- hookSetupResult{err:err}
+			ready <- hookSetupResult{err: err}
 			return
 		}
 
@@ -178,6 +188,7 @@ type hookSetupResult struct {
 }
 
 // From the Windows API documentation:
+//
 //	Contains message information from a thread's message queue.
 //
 // Refer to the following Windows API document for more information:

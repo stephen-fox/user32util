@@ -1,6 +1,7 @@
 package user32util
 
 import (
+	"fmt"
 	"unsafe"
 )
 
@@ -72,6 +73,7 @@ func (o LowLevelMouseEvent) MouseButtonAction() MouseButtonAction {
 }
 
 // From the Windows API documentation:
+//
 //	Contains information about a low-level mouse input event.
 //
 // Refer to the following Windows API document for more information:
@@ -85,6 +87,7 @@ type MsllHookStruct struct {
 }
 
 // From the Windows API documentation:
+//
 //	The POINT structure defines the x- and y- coordinates of a point.
 //
 // Refer to the following Windows API document for more information:
@@ -98,6 +101,7 @@ type Point struct {
 // LowLevelMouseProc Windows hook.
 //
 // From the Windows API documentation:
+//
 //	An application-defined or library-defined callback function
 //	used with the SetWindowsHookEx function. The system calls
 //	this function every time a new mouse input event is about to
@@ -134,7 +138,8 @@ func (o *LowLevelMouseEventListener) Release() error {
 // SetCursorPos sets the mouse cursor position.
 //
 // From the Windows API documentation:
-// 	Moves the cursor to the specified screen coordinates. If the new
+//
+//	Moves the cursor to the specified screen coordinates. If the new
 //	coordinates are not within the screen rectangle set by the most
 //	recent ClipCursor function call, the system automatically adjusts
 //	the coordinates so that the cursor stays within the rectangle.
@@ -146,6 +151,19 @@ func SetCursorPos(x int32, y int32, user32 *User32DLL) (bool, error) {
 	if ret == 1 {
 		return true, nil
 	}
+
+	return false, err
+}
+
+func GetCursorPos(user32 *User32DLL) (bool, error) {
+	point := Point{}
+	pointPointer := &point
+	p := unsafe.Pointer(pointPointer)
+	ret, _, err := user32.getCursorPos.Call(uintptr(p))
+	if ret == 1 {
+		return true, nil
+	}
+	fmt.Printf("The value of ret is: ", point)
 
 	return false, err
 }
